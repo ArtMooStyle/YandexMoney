@@ -41,15 +41,19 @@ namespace Grand.Plugin.Payments.YandexMoney.Controllers
             try
             {
                 var order = _orderService.GetOrderById(model.label);
-                if (order != null && ValidateSha(model) 
-                    && order.OrderTotal == Decimal.Parse(model.withdraw_amount)
-                    && )_orderProcessingService.CanMarkOrderAsPaid(order))
+                if (order != null && ValidateSha(model))
                 {
-                    _orderProcessingService.MarkOrderAsPaid(order);
-                    UpdateOrderFromTransaction(model, order);
-                    return Json(new { status = true, message = "200Ok" });
-                }
-
+                    if (order.OrderTotal == Decimal.Parse(model.withdraw_amount))
+                    {
+                        if (_orderProcessingService.CanMarkOrderAsPaid(order))
+                        {
+                            _orderProcessingService.MarkOrderAsPaid(order);
+                            UpdateOrderFromTransaction(model, order);
+                            return Json(new { status = true, message = "200Ok" });
+                        }
+                    }    
+                }     
+                
                 return Json(new { status = false, message = "Invalid format" });
             }
             catch (Exception ex) {
